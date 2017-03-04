@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -121,17 +122,26 @@ public class MainActivity extends AppCompatActivity implements
                 mButton.setSmoothPercent(1, 10000);
             }
         });
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, PairActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void sendInfo(String baseUrl, Context context){
         RequestQueue queue = Volley.newRequestQueue(context);
-        String url = baseUrl+"request_help"+"/NOMBRE_PERSONA"+":"+"+34681361767"+"/Pedro"+":"+"+34622379723"+"/"+sLatitude+","+sLongitude;
+        String url = baseUrl+"request_help"+"/NOMBRE_PERSONA"+":"+"+34681361767"+"/Pedro"+":"+"+34622379723"+"/"+sLongitude+","+sLatitude;
         StringRequest sRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 // Display the first 500 characters of the response string.
-                Log.i("SUCCESS", response.substring(0,500));
+                Log.i("SUCCESS", "BIEN");
             }
         }, new Response.ErrorListener() {
             @Override
