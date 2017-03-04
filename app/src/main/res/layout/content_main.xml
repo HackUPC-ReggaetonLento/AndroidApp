@@ -13,8 +13,99 @@
     tools:context="inc.lento.reggaeton.com.androidapp.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/button"
+        android:layout_width="98dp"
+        android:layout_height="98dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/avatar_example"
+        app:civ_border_color="#FFF"
+        app:civ_border_width="2dp" />
+
+    <TableLayout
+        android:id="@+id/coordinates"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_below="@+id/button"
+        android:layout_marginTop="48dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tv_latitude"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:text="New Text"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                tools:text="20.3" />
+
+            <TextView
+                android:id="@+id/tv_longitude"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_column="2"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:text="New Text"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                tools:text="45.2" />
+        </TableRow>
+
+        <TableRow
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tv_latitude_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:text="Latitud: "
+                android:textAppearance="@style/TextAppearance.AppCompat.Caption" />
+
+            <TextView
+                android:id="@+id/tv_longitude_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_column="2"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:text="Longitud: "
+                android:textAppearance="@style/TextAppearance.AppCompat.Caption" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal">
+
+            <ImageView
+                android:id="@+id/iv_activity_icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:src="@drawable/ic_question" />
+
+        </TableRow>
+
+        <TextView
+            android:id="@+id/tv_activity_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:text="Activity"
+            android:textAppearance="@style/TextAppearance.AppCompat.Caption" />
+
+    </TableLayout>
+
 </RelativeLayout>
