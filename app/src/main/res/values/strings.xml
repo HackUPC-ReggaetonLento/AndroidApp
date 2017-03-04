@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">AndroidApp</string>
     <string name="action_settings">Settings</string>
+
+    <string name="beware">Beware!!</string>
+    <string name="beware_info">Something has happened near to you. Be cautious.</string>
 </resources>

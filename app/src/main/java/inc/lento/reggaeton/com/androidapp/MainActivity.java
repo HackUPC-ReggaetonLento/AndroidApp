@@ -95,20 +95,7 @@ public class MainActivity extends AppCompatActivity implements
         mLongitude = (TextView) findViewById(R.id.tv_longitude);
         mDectectedActivityIcon = (ImageView) findViewById(R.id.iv_activity_icon);
 
-        buildGoogleApiClient();
-
-        // Crear configuración de peticiones
-        createLocationRequest();
-
-        // Crear opciones de peticiones
-        buildLocationSettingsRequest();
-
-        // Verificar ajustes de ubicación actuales
-        checkLocationSettings();
-
-        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver();
-
-        updateValuesFromBundle(savedInstanceState);
+        getLocation(savedInstanceState);
 
         final MagicProgressCircle mButton = (MagicProgressCircle)findViewById(R.id.button);
         mButton.setOnClickListener(new View.OnClickListener() {
@@ -131,6 +118,20 @@ public class MainActivity extends AppCompatActivity implements
                 startActivity(intent);
             }
         });
+    }
+
+    public Location getLocation(final Bundle savedInstanceState){
+        buildGoogleApiClient();
+
+        // Crear configuración de peticiones
+        createLocationRequest();
+        // Crear opciones de peticiones
+        buildLocationSettingsRequest();
+        // Verificar ajustes de ubicación actuales
+        checkLocationSettings();
+        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver();
+        updateValuesFromBundle(savedInstanceState);
+        return mLastLocation;
     }
 
     private void sendInfo(String baseUrl, Context context){
