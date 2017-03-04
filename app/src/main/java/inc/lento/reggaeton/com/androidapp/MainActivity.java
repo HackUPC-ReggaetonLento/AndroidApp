@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements
     @DrawableRes
     private int mImageResource = R.drawable.ic_question;
 
+    private String sLongitude, sLatitude;
+
     // UI
     private TextView mLatitude;
     private TextView mLongitude;
@@ -82,26 +84,27 @@ public class MainActivity extends AppCompatActivity implements
         mLongitude = (TextView) findViewById(R.id.tv_longitude);
         mDectectedActivityIcon = (ImageView) findViewById(R.id.iv_activity_icon);
 
+        buildGoogleApiClient();
+
+        // Crear configuración de peticiones
+        createLocationRequest();
+
+        // Crear opciones de peticiones
+        buildLocationSettingsRequest();
+
+        // Verificar ajustes de ubicación actuales
+        checkLocationSettings();
+
+        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver();
+
+        updateValuesFromBundle(savedInstanceState);
+
         final CircleImageView mButton = (CircleImageView)findViewById(R.id.button);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mButton.setBackgroundColor(getResources().getColor(R.color.buttonPressed));
-                // Establecer punto de entrada para la API de ubicación
-                buildGoogleApiClient();
 
-                // Crear configuración de peticiones
-                createLocationRequest();
-
-                // Crear opciones de peticiones
-                buildLocationSettingsRequest();
-
-                // Verificar ajustes de ubicación actuales
-                checkLocationSettings();
-
-                mBroadcastReceiver = new ActivityDetectionBroadcastReceiver();
-
-                updateValuesFromBundle(savedInstanceState);
             }
         });
     }
@@ -252,8 +255,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void updateLocationUI() {
-        mLatitude.setText(String.valueOf(mLastLocation.getLatitude()));
-        mLongitude.setText(String.valueOf(mLastLocation.getLongitude()));
+        sLatitude = String.valueOf(mLastLocation.getLatitude());
+        mLatitude.setText(sLatitude);
+        sLongitude = String.valueOf(mLastLocation.getLongitude());
+        mLongitude.setText(sLongitude);
     }
 
     private void updateRecognitionUI() {
@@ -278,21 +283,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void getLastLocation() {
-        if (isLocationPermissionGranted()) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        } else {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             manageDeniedPermission();
+            return;
         }
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
     }
 
     private void processLastLocation() {
@@ -311,30 +306,16 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void startLocationUpdates() {
-        if (isLocationPermissionGranted()) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            LocationServices.FusedLocationApi.requestLocationUpdates(
-                    mGoogleApiClient, mLocationRequest, MainActivity.this);
-        } else {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             manageDeniedPermission();
+            return;
         }
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, MainActivity.this);
     }
 
     private void manageDeniedPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // Aquí muestras confirmación explicativa al usuario
-            // por si rechazó los permisos anteriormente
-        } else {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                     this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION);
