@@ -13,20 +13,38 @@
     tools:context="inc.lento.reggaeton.com.androidapp.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/button"
-        android:layout_width="98dp"
-        android:layout_height="98dp"
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/avatar_example"
-        app:civ_border_color="#FFF"
-        app:civ_border_width="2dp" />
+        android:id="@+id/layout">
+
+        <com.liulishuo.magicprogresswidget.MagicProgressCircle
+            android:id="@+id/button"
+            android:layout_width="@dimen/progressBar"
+            android:layout_height="@dimen/progressBar"
+            app:mpc_percent="1.0"
+            app:mpc_start_color="@color/button"
+            app:mpc_end_color="@color/button"
+            app:mpc_stroke_width="@dimen/progressBarWidth"
+            app:mpc_default_color="@color/button"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:text="TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/textView"
+            android:textSize="28dp"
+            android:layout_centerVertical="true"/>
+    </RelativeLayout>
 
     <TableLayout
         android:id="@+id/coordinates"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/button"
+        android:layout_below="@+id/layout"
         android:layout_marginTop="48dp">
 
         <TableRow

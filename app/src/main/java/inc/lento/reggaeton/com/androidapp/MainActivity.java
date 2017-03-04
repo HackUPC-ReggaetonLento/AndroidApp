@@ -24,6 +24,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -36,6 +42,9 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.liulishuo.magicprogresswidget.MagicProgressCircle;
+
+import java.net.HttpURLConnection;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -48,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String LOCATION_KEY = "location-key";
     private static final String ACTIVITY_KEY = "activity-key";
+    private static final String URL = "https://hackupc2017.scalingo.io/";
 
     // Location API
     private GoogleApiClient mGoogleApiClient;
@@ -99,14 +109,37 @@ public class MainActivity extends AppCompatActivity implements
 
         updateValuesFromBundle(savedInstanceState);
 
-        final CircleImageView mButton = (CircleImageView)findViewById(R.id.button);
+        final MagicProgressCircle mButton = (MagicProgressCircle)findViewById(R.id.button);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mButton.setBackgroundColor(getResources().getColor(R.color.buttonPressed));
-
+                mButton.setPercent(0);
+                sendInfo(URL, MainActivity.this);
+                mButton.setDefaultColor(View.INVISIBLE);
+                mButton.setStartColor(getResources().getColor(R.color.buttonCancel));
+                mButton.setEndColor(getResources().getColor(R.color.buttonCancel));
+                mButton.setSmoothPercent(1, 10000);
             }
         });
+    }
+
+    private void sendInfo(String baseUrl, Context context){
+        RequestQueue queue = Volley.newRequestQueue(context);
+        String url = baseUrl+"request_help"+"/NOMBRE_PERSONA"+":"+"+34681361767"+"/Pedro"+":"+"+34622379723"+"/"+sLatitude+","+sLongitude;
+        StringRequest sRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                // Display the first 500 characters of the response string.
+                Log.i("SUCCESS", response.substring(0,500));
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("ERROR", String.valueOf(error));
+            }
+        });
+        queue.add(sRequest);
     }
 
     @Override
