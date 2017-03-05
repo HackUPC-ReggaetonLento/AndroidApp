@@ -31,13 +31,11 @@ public class ledControl extends ActionBarActivity {
     private ProgressDialog progress;
     BluetoothAdapter myBluetooth = null;
     BluetoothSocket btSocket = null;
-    private boolean isBtConnected = false;
 
     OutputStream mOutputStream;
     InputStream mInputStream;
     byte[] readBuffer;
     int readBufferPosition;
-    int counter;
     volatile boolean stopWorker;
 
     //SPP UUID. Look for it
@@ -60,13 +58,7 @@ public class ledControl extends ActionBarActivity {
         lumn = (TextView)findViewById(R.id.lumn);
 
         //new ConnectBT().execute(); //Call the class to connect
-        try {
-            openBT();
-            sendData("A");
-            beginListenForData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        new openBT().execute();
 
         //commands to be sent to bluetooth
         btnOn.setOnClickListener(new View.OnClickListener() {
@@ -91,19 +83,35 @@ public class ledControl extends ActionBarActivity {
         });
     }
 
-    void openBT() throws IOException {
-        progress = ProgressDialog.show(ledControl.this, "Connecting...", "Please wait!!!");  //show a progress dialog
+    private class openBT extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onPreExecute(){
+            progress = ProgressDialog.show(ledControl.this, "Connecting...", "Please wait!!!");  //show a progress dialog
+        }
+        @Override
+        protected Void doInBackground(Void... devices) {
 
-        UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //Standard SerialPortService ID
-        myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
-        BluetoothDevice device = myBluetooth.getRemoteDevice(address);//connects to the device's address and checks if it's available
-        btSocket = device.createRfcommSocketToServiceRecord(uuid);
-        btSocket.connect();
-        mOutputStream = btSocket.getOutputStream();
-        mInputStream = btSocket.getInputStream();
+            UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //Standard SerialPortService ID
+            myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
+            BluetoothDevice device = myBluetooth.getRemoteDevice(address);//connects to the device's address and checks if it's available
+            try{
+                btSocket = device.createRfcommSocketToServiceRecord(uuid);
+                btSocket.connect();
+                mOutputStream = btSocket.getOutputStream();
+                mInputStream = btSocket.getInputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-        progress.dismiss();
-        msg("Bluetooth Opened");
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            progress.dismiss();
+            beginListenForData();
+        }
     }
 
     void sendData(String data) throws IOException {
@@ -134,7 +142,6 @@ public class ledControl extends ActionBarActivity {
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
-
                                     handler.post(new Runnable() {
                                         public void run() {
                                             msg(data);
@@ -149,6 +156,7 @@ public class ledControl extends ActionBarActivity {
                     }
                     catch (IOException ex) {
                         stopWorker = true;
+                        Log.e("ERROR", ex.getMessage());
                     }
                 }
             }

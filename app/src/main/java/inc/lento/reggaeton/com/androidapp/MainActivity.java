@@ -11,6 +11,8 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,8 +20,11 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,9 +48,14 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.liulishuo.magicprogresswidget.MagicProgressCircle;
 
+import org.w3c.dom.Text;
+
 import java.net.HttpURLConnection;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -68,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements
 
     // Activity Recognition API
     private ActivityDetectionBroadcastReceiver mBroadcastReceiver;
-    @DrawableRes
     private int mImageResource = R.drawable.ic_question;
 
     private String sLongitude, sLatitude;
@@ -76,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements
     // UI
     private TextView mLatitude;
     private TextView mLongitude;
-    private ImageView mDectectedActivityIcon;
 
     // Códigos de petición
     public static final int REQUEST_LOCATION = 1;
@@ -90,10 +98,13 @@ public class MainActivity extends AppCompatActivity implements
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        isFirstTime();
+
         // Referencias UI
+        final TextView mTimeText = (TextView) findViewById(R.id.textView);
+        mTimeText.setText("10");
         mLatitude = (TextView) findViewById(R.id.tv_latitude);
         mLongitude = (TextView) findViewById(R.id.tv_longitude);
-        mDectectedActivityIcon = (ImageView) findViewById(R.id.iv_activity_icon);
 
         getLocation(savedInstanceState);
 
@@ -101,23 +112,44 @@ public class MainActivity extends AppCompatActivity implements
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mButton.setPercent(0);
-                sendInfo(URL, MainActivity.this);
-                mButton.setDefaultColor(View.INVISIBLE);
-                mButton.setStartColor(getResources().getColor(R.color.buttonCancel));
-                mButton.setEndColor(getResources().getColor(R.color.buttonCancel));
-                mButton.setSmoothPercent(1, 10000);
+                if(mButton.getStartColor() == getResources().getColor(R.color.button)){
+                    mButton.setPercent(0);
+                    mTimeText.setVisibility(View.VISIBLE);
+                    mButton.setStartColor(getResources().getColor(R.color.buttonCancel));
+                    mButton.setEndColor(getResources().getColor(R.color.buttonCancel));
+                    mButton.setSmoothPercent(1, 10000);
+
+                    //mTimeText.setText(String.valueOf(Integer.parseInt(mTimeText.getText().toString())-1));
+                    sendInfo(URL, MainActivity.this);
+
+                }else {
+                    mTimeText.setText("10");
+
+                    mTimeText.setVisibility(View.INVISIBLE);
+                    mButton.setPercent(1);
+                    mButton.setDefaultColor(View.INVISIBLE);
+                    mButton.setStartColor(getResources().getColor(R.color.button));
+                    mButton.setEndColor(getResources().getColor(R.color.button));
+                }
             }
         });
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        CardView cardView = (CardView) findViewById(R.id.cardView);
+        cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, PairActivity.class);
                 startActivity(intent);
             }
         });
+    }
+
+    public void isFirstTime(){
+        boolean first = Boolean.parseBoolean(PreferenceManager.getDefaultSharedPreferences(getApplication()).getString("firstTime", "true"));
+        if (first){
+            PreferenceManager.getDefaultSharedPreferences(getApplication()).edit().putString("firstTime", "false").apply();
+            FirebaseMessaging.getInstance().subscribeToTopic("warning_system");
+        }
     }
 
     public Location getLocation(final Bundle savedInstanceState){
@@ -136,7 +168,17 @@ public class MainActivity extends AppCompatActivity implements
 
     private void sendInfo(String baseUrl, Context context){
         RequestQueue queue = Volley.newRequestQueue(context);
-        String url = baseUrl+"request_help"+"/NOMBRE_PERSONA"+":"+"+34681361767"+"/Pedro"+":"+"+34622379723"+"/"+sLongitude+","+sLatitude;
+
+        String name = PreferenceManager.getDefaultSharedPreferences(getApplication()).getString("name", "NADIE");
+        String number = PreferenceManager.getDefaultSharedPreferences(getApplication()).getString("number", "+34666666666");
+        String nameContact1 =  PreferenceManager.getDefaultSharedPreferences(getApplication()).getString("nameContact1", "NADIE");
+        String numberContact1 = PreferenceManager.getDefaultSharedPreferences(getApplication()).getString("numberContact1", "+34666666666");
+        String nameContact2 = PreferenceManager.getDefaultSharedPreferences(getApplication()).getString("nameContact2", "NADIE");
+        String numberContact2 = PreferenceManager.getDefaultSharedPreferences(getApplication()).getString("numberContact2", "+34666666666");
+        String nameContact3 = PreferenceManager.getDefaultSharedPreferences(getApplication()).getString("nameContact3", "NADIE");
+        String numberContact3 = PreferenceManager.getDefaultSharedPreferences(getApplication()).getString("numberContact3", "+34666666666");
+
+        String url = baseUrl+"request_help"+"/"+name+":"+number+"/"+nameContact1+":"+numberContact1+","+nameContact2+":"+numberContact2+","+nameContact3+":"+numberContact3+"/"+sLatitude+","+sLongitude;
         StringRequest sRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
             @Override
@@ -290,8 +332,6 @@ public class MainActivity extends AppCompatActivity implements
 
             if (savedInstanceState.containsKey(ACTIVITY_KEY)) {
                 mImageResource = savedInstanceState.getInt(ACTIVITY_KEY);
-
-                updateRecognitionUI();
             }
 
 
@@ -303,10 +343,6 @@ public class MainActivity extends AppCompatActivity implements
         mLatitude.setText(sLatitude);
         sLongitude = String.valueOf(mLastLocation.getLongitude());
         mLongitude.setText(sLongitude);
-    }
-
-    private void updateRecognitionUI() {
-        mDectectedActivityIcon.setImageResource(mImageResource);
     }
 
     private void stopActivityUpdates() {
@@ -374,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
+    public void onConnected(Bundle bundle) {
 
         // Obtenemos la última ubicación al ser la primera vez
         processLastLocation();
@@ -391,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    public void onConnectionFailed(ConnectionResult connectionResult) {
         Toast.makeText(
                 this,
                 "Error de conexión con el código:" + connectionResult.getErrorCode(),
@@ -410,7 +446,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     @Override
-    public void onResult(@NonNull Status status) {
+    public void onResult(Status status) {
         if (status.isSuccess()) {
             Log.d(TAG, "Detección de actividad iniciada");
 
@@ -426,8 +462,26 @@ public class MainActivity extends AppCompatActivity implements
             int type = intent.getIntExtra(Constants.ACTIVITY_KEY, -1);
 
             mImageResource = Constants.getActivityIcon(type);
-            updateRecognitionUI();
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //Alternativa 1
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Intent intent = new Intent(MainActivity.this, settingsActivity.class);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }
